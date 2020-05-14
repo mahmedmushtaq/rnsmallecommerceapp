@@ -1,11 +1,12 @@
-import React from "react";
-import {StyleSheet, View, Text, FlatList, Platform, Button} from "react-native";
+import React,{useEffect,useState,useCallback} from "react";
+import {StyleSheet, View, Text, FlatList,ActivityIndicator, Platform, Button} from "react-native";
 import {useDispatch, useSelector} from "react-redux";
 import ProductItem from "../../components/store/ProductItem";
 import * as cartAction from "../../store/actions/cart";
 import {HeaderButtons,Item} from "react-navigation-header-buttons";
 import CustomHeaderButton from "../../components/ui/customheaderbutton";
 import Colors from "../../constants/Colors";
+import {loadData} from "../../store/actions/products";
 
 
 
@@ -13,6 +14,36 @@ import Colors from "../../constants/Colors";
 const ProductsOverview = props=>{
     const products = useSelector(state=>state.products.availableProducts);
     const dispatch = useDispatch();
+    const [isRefreshing,setRefreshing] = useState(false);
+    const [isLoading,setLoading] = useState(true);
+
+    const loadProducts = useCallback(async ()=>{
+        setRefreshing(true);
+        await dispatch(loadData());
+        setRefreshing(false);
+    }, [dispatch,setLoading])
+
+
+
+    useEffect(() => {
+        const willFocusSub = props.navigation.addListener(
+            'willFocus',
+            loadProducts
+        );
+
+        return () => {
+            willFocusSub.remove();
+        };
+    }, [loadProducts]);
+
+    useEffect(() => {
+        loadProducts().then(()=>{
+            setLoading(false);
+        });
+
+    }, [dispatch, loadProducts]);
+
+
 
     const productDetails = (id,title)=>{
         props.navigation.navigate("ProductDetail",{
@@ -20,9 +51,20 @@ const ProductsOverview = props=>{
             productTitle:title,
         })
     }
+
+    if(isLoading){
+        return <View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
+            <ActivityIndicator/>
+        </View>
+    }
+
     return(
 
-        <FlatList data={products} renderItem={itemData=><ProductItem image={itemData.item.imageUrl}
+        <FlatList
+            onRefresh={loadProducts}
+            refreshing={isRefreshing}
+            data={products}
+            renderItem={itemData=><ProductItem image={itemData.item.imageUrl}
         title={itemData.item.title}
         price={itemData.item.price}
         onSelect={()=>{
