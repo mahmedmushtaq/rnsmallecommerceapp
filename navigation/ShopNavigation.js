@@ -1,7 +1,7 @@
-import {  createAppContainer } from 'react-navigation';
+import {createAppContainer, createSwitchNavigator, SafeAreaView} from 'react-navigation';
 import { Platform } from 'react-native';
 import {createStackNavigator} from "react-navigation-stack";
-import {createDrawerNavigator} from "react-navigation-drawer";
+import {createDrawerNavigator, DrawerNavigatorItems} from "react-navigation-drawer";
 import UserProduct from "../screens/user/UserProduct";
 
 import CartScreen from "../screens/store/CartScreen";
@@ -9,11 +9,13 @@ import Colors from '../constants/Colors';
 import ProductsOverview from "../screens/store/ProductOverview";
 import ProductDetail from "../screens/store/ProductDetails";
 import OrderScreen from "../screens/store/OrderScreen";
- import {Ionicons} from "@expo/vector-icons";
+import AuthScreen from "../screens/user/AuthScreen";
  import EditProduct from "../screens/user/EditProduct";
  import React from "react";
-import {HeaderButtons, Item} from "react-navigation-header-buttons";
-import CustomHeaderButton from "../components/ui/customheaderbutton";
+import MainScreen from "../screens/user/MainScreen";
+import {Button,View} from "react-native";
+import {useDispatch} from "react-redux";
+import {logout} from "../store/actions/auth";
 
 
 const defaultNavigator = {
@@ -89,8 +91,47 @@ const Drawer = createDrawerNavigator({
     contentOptions:{
         activeTintColor:Colors.primary
     },
+    contentComponent:props=>{
+        const dispatch = useDispatch();
+
+        return(
+            <View style={{flex:1,padding:20}}>
+                <SafeAreaView>
+                    <DrawerNavigatorItems {...props}/>
+                    <Button
+                        onPress={()=>{
+                                  dispatch(logout());
+
+                                  props.navigation.navigate("Auth");
+                        }}
+                        title={"Logout"}
+                        color={Colors.primary}/>
+                </SafeAreaView>
+            </View>
+        )
+    }
 
 });
 
 
-export default createAppContainer(Drawer);
+const Auth = createStackNavigator({
+    Auth:{
+        screen:AuthScreen,
+        navigationOptions:{
+            headerTitle: "Authentication",
+        }
+    },
+},{
+    defaultNavigationOptions:{
+        ...defaultNavigator,
+    }
+})
+
+const MainNavigation = createSwitchNavigator({
+    MainScreen,
+    Auth,
+    Shop:Drawer,
+
+})
+
+export default createAppContainer(MainNavigation);

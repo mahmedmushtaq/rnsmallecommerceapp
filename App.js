@@ -9,11 +9,13 @@ import {AppLoading} from "expo";
 import cart from "./store/reducers/cart";
 import orders from "./store/reducers/order";
 import thunk from "redux-thunk";
+import auth from "./store/reducers/auth";
 
 const rootReducer= combineReducers({
   products:productsReducer,
   cart,
   orders,
+  auth,
 })
 
 const store = createStore(rootReducer,applyMiddleware(thunk));

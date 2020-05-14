@@ -7,9 +7,10 @@ import Product from "../../models/product";
 
 
 export const deleteItem = (pid)=>{
-    return async dispatch=> {
+    return async (dispatch,getState)=> {
       //  await axios.delete(`https://rn-small-ecommerce-app.firebaseio.com/products/${pid}.json`);
-       await fetch(`https://rn-small-ecommerce-app.firebaseio.com/products/${pid}.json`,{
+       await fetch(`https://rn-small-ecommerce-app.firebaseio.com/products/${pid}.json`+
+           "?auth="+getState().auth.token,{
             method:"DELETE",
 
         });
@@ -45,9 +46,11 @@ export const loadData = ()=>{
 
 export const createProduct = (title,description,imageUrl,price)=>{
 
-    return async dispatch=>{
+    return async (dispatch,getState)=>{
 
-       const resData = await  axios.post("https://rn-small-ecommerce-app.firebaseio.com/products.json",{
+       const resData = await  axios.post("https://rn-small-ecommerce-app.firebaseio.com/products.json"+
+           "?auth="+getState().auth.token
+           ,{
             title:title,
             description:description,
             imageUrl:imageUrl,
@@ -72,14 +75,22 @@ export const createProduct = (title,description,imageUrl,price)=>{
 }
 
 export const updateProduct = (id,title,description,imageUrl,price)=>{
-    return async dispatch=>{
+    return async (dispatch,getState)=>{
 
-        await axios.patch(`https://rn-small-ecommerce-app.firebaseio.com/products/${id}.json`,{
-            title,
-            description,
-            imageUrl,
-            price,
-        })
+        // await axios.patch(`https://rn-small-ecommerce-app.firebaseio.com/products/${id}.json`+
+        // "?auth="+getState().auth.token,)
+        await fetch(`https://rn-small-ecommerce-app.firebaseio.com/products/${id}.json`+"?auth="+getState().auth.token,{
+            method:"PATCH",
+            headers:{
+                "Content-Type":"application/json",
+            },
+            body:JSON.stringify({
+                title,
+                description,
+                imageUrl,
+                price,
+            })
+        });
 
 
         dispatch({
